@@ -1,0 +1,61 @@
+分析： 日百W订单 ，一年的订单量就是3亿
+考虑到单表存储上限，应该实行分表分库策略
+
+单表数据超过 500W 需要进行分表，并且客户需要查询近半年的客诉订单，因此 水平分库维度可以在 半年到一年之间
+
+按500w进行分表， 一个库一年大概需要60张表
+又 由于用户和商户都需要频繁查询订单， 查询需求旺盛， 可设置读写分离
+再设置用户订单表 和 商户订单表 ， 分别通过 用户id和商户id进行hash随机分配方式入表
+
+索引设置，需要 时间 ，买家姓名， 订单尾号 用户id/商户id做索引
+
+由于要做买卖家订单排行，由于数据量庞大，建议归档数据时，计算好已归档订单的数量 同步到当前库中
+-- 用户订单表
+CREATE TABLE order_buyer (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50),
+    buyerId VARCHAR(50),
+    salerId VARCHAR(50),
+    createTime DATETIME
+
+    ALTER TABLE order ADD INDEX idx_order_no ON SUBSTRING(id, 5, 10);
+    ALTER TABLE order ADD INDEX idx_createTime ON createTime;
+    ALTER TABLE order ADD INDEX index_buyer ON buyerId;
+    ALTER TABLE order ADD INDEX index_name ON name;
+);
+-- 用户排行榜
+CREATE TABLE charts_buyer
+ (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    buyerId VARCHAR(50),
+    collectTime dateTime
+    nums Number(10,2)
+
+    ALTER TABLE charts_buyer ADD  idx_nums ON nums;
+
+);
+
+-- 商户订单表
+CREATE TABLE order_saler(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50),
+    buyerId VARCHAR(50),
+    salerId VARCHAR(50),
+    createTime DATETIME
+
+    ALTER TABLE order ADD INDEX idx_order_no ON SUBSTRING(id, 5, 10);
+    ALTER TABLE order ADD INDEX idx_createTime ON createTime;
+    ALTER TABLE order ADD INDEX index_saler ON saler;
+    ALTER TABLE order ADD INDEX index_name ON name;
+);
+-- 商户排行榜
+CREATE TABLE charts_buyer
+ (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    buyerId VARCHAR(50),
+    collectTime dateTime
+    nums Number(10,2)
+
+    ALTER TABLE charts_buyer ADD  idx_nums ON nums;
+
+);

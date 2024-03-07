@@ -18,4 +18,8 @@ public class PayDomainService {
     public void payRecord(CommandPay commandPay) {
         //无需实现，直接调用即可
     }
+
+    public void callBack(CommandPay commandPay) {
+        commandPay.getPayBean().handle(commandPay);
+    }
 }

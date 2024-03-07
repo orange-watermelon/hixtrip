@@ -22,6 +22,7 @@ public class CommandPayDTO {
     /**
      * 支付状态
      */
+    //0-- 等待回调 1 -- 成功 2-- 失败 3-- 重复
     private String payStatus;
 
 
